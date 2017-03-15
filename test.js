@@ -7,78 +7,81 @@ const {
 } = require('./the-super-tiny-compiler');
 const assert = require('assert');
 
-const input  = '(add 2 (subtract 4 2))';
+const input  = '(add 2 (subtract a 2))';
 const output = 'add(2, subtract(4, 2));';
 
-const tokens = [
-  { type: 'paren',  value: '('        },
-  { type: 'name',   value: 'add'      },
-  { type: 'number', value: '2'        },
-  { type: 'paren',  value: '('        },
-  { type: 'name',   value: 'subtract' },
-  { type: 'number', value: '4'        },
-  { type: 'number', value: '2'        },
-  { type: 'paren',  value: ')'        },
-  { type: 'paren',  value: ')'        }
-];
+// const tokens = [
+//   { type: 'paren',  value: '('        },
+//   { type: 'name',   value: 'add'      },
+//   { type: 'number', value: '2'        },
+//   { type: 'paren',  value: '('        },
+//   { type: 'name',   value: 'subtract' },
+//   { type: 'number', value: '4'        },
+//   { type: 'number', value: '2'        },
+//   { type: 'paren',  value: ')'        },
+//   { type: 'paren',  value: ')'        }
+// ];
 
-const ast = {
-  type: 'Program',
-  body: [{
-    type: 'CallExpression',
-    name: 'add',
-    params: [{
-      type: 'NumberLiteral',
-      value: '2'
-    }, {
-      type: 'CallExpression',
-      name: 'subtract',
-      params: [{
-        type: 'NumberLiteral',
-        value: '4'
-      }, {
-        type: 'NumberLiteral',
-        value: '2'
-      }]
-    }]
-  }]
-};
 
-const newAst = {
-  type: 'Program',
-  body: [{
-    type: 'ExpressionStatement',
-    expression: {
-      type: 'CallExpression',
-      callee: {
-        type: 'Identifier',
-        name: 'add'
-      },
-      arguments: [{
-        type: 'NumberLiteral',
-        value: '2'
-      }, {
-        type: 'CallExpression',
-        callee: {
-          type: 'Identifier',
-          name: 'subtract'
-        },
-        arguments: [{
-          type: 'NumberLiteral',
-          value: '4'
-        }, {
-          type: 'NumberLiteral',
-          value: '2'
-        }]
-      }]
-    }
-  }]
-};
+// //we would like to error out - if type was inncorrect
+// const ast = {
+//   type: 'Program',
+//   body: [{
+//     type: 'CallExpression',
+//     name: 'add',
+//     params: [{
+//       type: 'NumberLiteral',
+//       value: '2'
+//     }, {
+//       type: 'CallExpression',
+//       name: 'subtract',
+//       params: [{
+//         type: 'NumberLiteral',
+//         value: '4'
+//       }, {
+//         type: 'NumberLiteral',
+//         value: '2'
+//       }]
+//     }]
+//   }]
+// };
 
-assert.deepStrictEqual(tokenizer(input), tokens, 'Tokenizer should turn `input` string into `tokens` array');
-assert.deepStrictEqual(parser(tokens), ast, 'Parser should turn `tokens` array into `ast`');
-assert.deepStrictEqual(transformer(ast), newAst, 'Transformer should turn `ast` into a `newAst`');
-assert.deepStrictEqual(codeGenerator(newAst), output, 'Code Generator should turn `newAst` into `output` string');
-assert.deepStrictEqual(compiler(input), output, 'Compiler should turn `input` into `output`');
+// const newAst = {
+//   type: 'Program',
+//   body: [{
+//     type: 'ExpressionStatement',
+//     expression: {
+//       type: 'CallExpression',
+//       callee: {
+//         type: 'Identifier',
+//         name: 'add'
+//       },
+//       arguments: [{
+//         type: 'NumberLiteral',
+//         value: '2'
+//       }, {
+//         type: 'CallExpression',
+//         callee: {
+//           type: 'Identifier',
+//           name: 'subtract'
+//         },
+//         arguments: [{
+//           type: 'NumberLiteral',
+//           value: '4'
+//         }, {
+//           type: 'NumberLiteral',
+//           value: '2'
+//         }]
+//       }]
+//     }
+//   }]
+// };
 
-console.log('All Passed!');
+
+
+let tokens = tokenizer(input);
+let ast = parser(tokens);
+let newAst = transformer(ast);
+let genCode = codeGenerator(newAst); //should typeChecking happen at CodeGen level???
+let run = typeThrower(genCode);
+//expect(parsed.body[0].params[1].params[0].value ).to.equal( 'a ');

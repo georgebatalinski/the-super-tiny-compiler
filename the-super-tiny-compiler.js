@@ -511,7 +511,10 @@ function tokenizer(input) {
     //    ^^^
     //    Name token
     //
+
+
     let LETTERS = /[a-z]/i;
+
     if (LETTERS.test(char)) {
       let value = '';
 
@@ -575,6 +578,7 @@ function parser(tokens) {
 
       // And we'll return a new AST node called `NumberLiteral` and setting its
       // value to the value of our token.
+       
       return {
         type: 'NumberLiteral',
         value: token.value,
@@ -584,6 +588,17 @@ function parser(tokens) {
     // If we have a string we will do the same as number and create a
     // `StringLiteral` node.
     if (token.type === 'string') {
+      current++;
+
+      return {
+        type: 'StringLiteral',
+        value: token.value,
+      };
+    }
+
+
+    //(gb) - temp to let the type pass -> so we can check it later - against expression
+    if (token.type === 'name' && token.value.length === 1) {
       current++;
 
       return {
@@ -771,6 +786,7 @@ function traverser(ast, visitor) {
       // child nodes to visit, so we'll just break.
       case 'NumberLiteral':
       case 'StringLiteral':
+        console.log( node );
         break;
 
       // And again, if we haven't recognized the node type then we'll throw an
@@ -943,6 +959,17 @@ function transformer(ast) {
  * the tree into one giant string.
  */
 
+
+function runTypeChecker( node ) {
+     if( node.callee.name === 'subtract') {
+       for( let i = 0; i < node.arguments.length; i++) {
+         if(node.arguments[i].type !== 'NumberLiteral') {
+           throw node.arguments[i].value + ' should be of type Number';
+         }
+       }
+     }
+}
+
 function codeGenerator(node) {
 
   // We'll break things down by the `type` of the `node`.
@@ -967,6 +994,7 @@ function codeGenerator(node) {
     // them through the code generator, joining them with a comma, and then
     // we'll add a closing parenthesis.
     case 'CallExpression':
+      runTypeChecker( node );
       return (
         codeGenerator(node.callee) +
         '(' +
@@ -1016,6 +1044,7 @@ function compiler(input) {
   let newAst = transformer(ast);
   let output = codeGenerator(newAst);
 
+  
   // and simply return the output!
   return output;
 }
